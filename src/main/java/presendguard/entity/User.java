@@ -22,7 +22,6 @@ public class User {
 
     private String username;
 
-    // ✅ 가입일 추가
     @Column(updatable = false)
     private LocalDateTime createdAt;
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import './App.css';
 import LoginForm from './components/LoginForm';
 import HeroImage from "./assets/hero-image.png";
+import PolicyPage from './pages/policypage';
 
 function App() {
   const [counts, setCounts] = useState({ total: 0, risks: 0, score: 0 });
@@ -190,26 +191,7 @@ function App() {
 
         {currentView === 'policy' && (
           <div className="fade-in">
-            <section className="dashboard-section" style={{ padding: '80px 0' }}>
-              <h2 className="hero-title" style={{ textAlign: 'center', fontSize: '48px' }}>Service Policy</h2>
-              <div className="visual-mockup" style={{ width: '100%', height: 'auto', transform: 'none', padding: '60px', textAlign: 'left', display: 'block', marginTop: '40px' }}>
-                <div className="policy-item">
-                  <h3 style={{ color: 'var(--navy)', marginBottom: '15px' }}>01. 휘발성 데이터 처리</h3>
-                  <p className="hero-description" style={{ fontSize: '17px', color: 'var(--text-gray)' }}>
-                    프롬프트 내역은 서버에 절대 영구 저장되지 않음<br />
-                    탐지 분석 완료 즉시 메모리에서 데이터 파기 수행함
-                  </p>
-                </div>
-                <hr style={{ margin: '40px 0', opacity: 0.1 }} />
-                <div className="policy-item">
-                  <h3 style={{ color: 'var(--navy)', marginBottom: '15px' }}>02. 보안 탐지 기준</h3>
-                  <p className="hero-description" style={{ fontSize: '17px', color: 'var(--text-gray)' }}>
-                    NER(개체명 인식) 기술 기반 고도화된 정보 식별<br />
-                    주민등록번호, 계좌번호 등 핵심 데이터 필터링함
-                  </p>
-                </div>
-              </div>
-            </section>
+            <PolicyPage navigateTo={navigateTo} />
           </div>
         )}
 

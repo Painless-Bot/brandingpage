@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 import LoginForm from './components/LoginForm';
+import HelpCenter from './components/HelpCenter.jsx';
 import HeroImage from "./assets/hero-image.png";
 
 function App() {
@@ -105,6 +106,7 @@ function App() {
           </button>
         </div>
       </nav>
+
       <div style={{ minHeight: '80vh' }}>
 
         {currentView === 'main' && (
@@ -213,26 +215,9 @@ function App() {
           </div>
         )}
 
+
         {currentView === 'help' && (
-          <div className="fade-in">
-            <section className="dashboard-section" style={{ padding: '80px 0' }}>
-              <h2 className="hero-title" style={{ textAlign: 'center', fontSize: '48px' }}>Help Center</h2>
-              <div className="stats-grid" style={{ marginTop: '50px' }}>
-                <div className="stat-card" style={{ cursor: 'pointer' }}>
-                  <h4>FAQ</h4>
-                  <p style={{ fontSize: '14px', marginTop: '10px', color: 'var(--text-gray)' }}>자주 발생하는 문제 및 해결 가이드 제공</p>
-                </div>
-                <div className="stat-card" style={{ cursor: 'pointer' }}>
-                  <h4>Guide</h4>
-                  <p style={{ fontSize: '14px', marginTop: '10px', color: 'var(--text-gray)' }}>서비스 설치 및 상세 사용법 매뉴얼</p>
-                </div>
-                <div className="stat-card highlight" style={{ cursor: 'pointer' }}>
-                  <h4>Support</h4>
-                  <p style={{ fontSize: '14px', marginTop: '10px' }}>전문가와의 1:1 문의 채널</p>
-                </div>
-              </div>
-            </section>
-          </div>
+          <HelpCenter loggedInUser={loggedInUser} />
         )}
 
       </div>

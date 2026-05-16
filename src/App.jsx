@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import './App.css';
 import LoginForm from './components/LoginForm';
 import HeroImage from "./assets/hero-image.png";
-import PolicyPage from './pages/policypage';
+import PolicyPage from './pages/PolicyPage';
+import HelpCenter from './pages/HelpCenter';
+import MaskingDashboard from './pages/MaskingDashboard';
 
 function App() {
   const [counts, setCounts] = useState({ total: 0, risks: 0, score: 0 });
@@ -64,12 +66,13 @@ function App() {
           {loggedInUser ? (
             <li onClick={() => { navigateTo('profile'); }}>내 프로필</li>
           ) : (
-            <li onClick={() => { setIsModalOpen(true); setIsNavOpen(false); }}>Login/Sign in</li>
+            <li onClick={() => { setIsModalOpen(true); setIsNavOpen(false); }}>로그인</li>
           )}
-          <li onClick={() => navigateTo('main')}>DashBoard</li>
-          <li onClick={() => navigateTo('profile')}>Profile</li>
-          <li onClick={() => navigateTo('policy')}>Policy</li>
-          <li onClick={() => navigateTo('help')}>Help</li>
+          <li onClick={() => navigateTo('main')}>대시보드</li>
+          <li onClick={() => navigateTo('analytics')}>📊 분석</li>
+          <li onClick={() => navigateTo('profile')}>프로필</li>
+          <li onClick={() => navigateTo('policy')}>정책</li>
+          <li onClick={() => navigateTo('help')}>고객지원</li>
         </ul>
       </aside>
       {isNavOpen && <div className="side-nav-overlay" onClick={() => setIsNavOpen(false)}></div>}
@@ -83,9 +86,10 @@ function App() {
             <li onClick={() => setIsModalOpen(true)}>로그인/회원가입</li>
           )}
           <li onClick={() => navigateTo('main')} className={currentView === 'main' ? 'active' : ''}>대시보드</li>
-          <li onClick={() => navigateTo('profile')} className={currentView === 'profile' ? 'active' : ''}>Profile</li>
-          <li onClick={() => navigateTo('policy')} className={currentView === 'policy' ? 'active' : ''}>Policy</li>
-          <li onClick={() => navigateTo('help')} className={currentView === 'help' ? 'active' : ''}>Help</li>
+          <li onClick={() => navigateTo('analytics')} className={currentView === 'analytics' ? 'active' : ''}>📊 분석</li>
+          <li onClick={() => navigateTo('profile')} className={currentView === 'profile' ? 'active' : ''}>프로필</li>
+          <li onClick={() => navigateTo('policy')} className={currentView === 'policy' ? 'active' : ''}>정책</li>
+          <li onClick={() => navigateTo('help')} className={currentView === 'help' ? 'active' : ''}>고객지원</li>
           {loggedInUser && (
             <>
               <li onClick={() => navigateTo('profile')} className={currentView === 'profile' ? 'active' : ''} style={{ color: 'var(--primary-blue)', fontWeight: '700' }}>
@@ -119,7 +123,13 @@ function App() {
                 </p>
                 <div className="button-group">
                   <button className="btn-go-back" onClick={() => navigateTo('policy')}>Learn More</button>
-                  <button className="btn-get-started" onClick={() => document.getElementById('dashboard').scrollIntoView({ behavior: 'smooth' })}>
+                  <button
+                    className="btn-get-started"
+                    onClick={() => {
+                      if (loggedInUser) navigateTo('analytics');
+                      else setIsModalOpen(true);
+                    }}
+                  >
                     <span className="btn-icon">▶</span> 시작하기
                   </button>
                 </div>
@@ -140,7 +150,28 @@ function App() {
                 <div className="stat-card danger"><h3>차단된 위험</h3><p className="stat-number">{counts.risks}</p></div>
                 <div className="stat-card highlight"><h3>보안 점수</h3><p className="stat-number">{counts.score}%</p></div>
               </div>
+              <div style={{ marginTop: 40, textAlign: 'center' }}>
+                <button
+                  className="btn-get-started"
+                  onClick={() => {
+                    if (loggedInUser) navigateTo('analytics');
+                    else setIsModalOpen(true);
+                  }}
+                >
+                  상세 분석 보기 →
+                </button>
+              </div>
             </section>
+          </div>
+        )}
+
+        {/* ✅ 새로운 분석 대시보드 */}
+        {currentView === 'analytics' && (
+          <div className="fade-in">
+            <MaskingDashboard
+              loggedInUser={loggedInUser}
+              onRequireLogin={() => setIsModalOpen(true)}
+            />
           </div>
         )}
 
@@ -159,16 +190,6 @@ function App() {
                   <div className="input-group"><label>Username</label><input type="text" value={loggedInUser.username || ''} readOnly /></div>
                   <div className="input-group"><label>Email Address</label><input type="email" value={loggedInUser.email || ''} readOnly /></div>
                   <div className="input-group"><label>가입일</label><input type="text" value={loggedInUser.createdAt ? new Date(loggedInUser.createdAt).toLocaleDateString('ko-KR') : ''} readOnly /></div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', margin: '20px 0' }}>
-                    <div style={{ background: '#f8faff', borderRadius: '16px', padding: '16px', textAlign: 'center' }}>
-                      <p style={{ fontSize: '24px', fontWeight: '800', color: 'var(--primary-blue)' }}>98%</p>
-                      <p style={{ fontSize: '12px', color: 'var(--text-gray)' }}>보안 점수</p>
-                    </div>
-                    <div style={{ background: '#f8faff', borderRadius: '16px', padding: '16px', textAlign: 'center' }}>
-                      <p style={{ fontSize: '24px', fontWeight: '800', color: 'var(--navy)' }}>0</p>
-                      <p style={{ fontSize: '12px', color: 'var(--text-gray)' }}>차단된 위험</p>
-                    </div>
-                  </div>
                   <button
                     className="btn-login-submit"
                     style={{ marginTop: '10px', background: '#ff4d4d' }}
@@ -197,23 +218,10 @@ function App() {
 
         {currentView === 'help' && (
           <div className="fade-in">
-            <section className="dashboard-section" style={{ padding: '80px 0' }}>
-              <h2 className="hero-title" style={{ textAlign: 'center', fontSize: '48px' }}>Help Center</h2>
-              <div className="stats-grid" style={{ marginTop: '50px' }}>
-                <div className="stat-card" style={{ cursor: 'pointer' }}>
-                  <h4>FAQ</h4>
-                  <p style={{ fontSize: '14px', marginTop: '10px', color: 'var(--text-gray)' }}>자주 발생하는 문제 및 해결 가이드 제공</p>
-                </div>
-                <div className="stat-card" style={{ cursor: 'pointer' }}>
-                  <h4>Guide</h4>
-                  <p style={{ fontSize: '14px', marginTop: '10px', color: 'var(--text-gray)' }}>서비스 설치 및 상세 사용법 매뉴얼</p>
-                </div>
-                <div className="stat-card highlight" style={{ cursor: 'pointer' }}>
-                  <h4>Support</h4>
-                  <p style={{ fontSize: '14px', marginTop: '10px' }}>전문가와의 1:1 문의 채널</p>
-                </div>
-              </div>
-            </section>
+            <HelpCenter
+              loggedInUser={loggedInUser}
+              onRequireLogin={() => setIsModalOpen(true)}
+            />
           </div>
         )}
 

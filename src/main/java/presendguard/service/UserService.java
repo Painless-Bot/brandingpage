@@ -31,14 +31,18 @@ public class UserService {
         userRepository.save(user);
     }
 
-    // ✅ 로그인 성공 시 UserInfoResponse 반환
     @Transactional(readOnly = true)
     public UserInfoResponse login(SignInRequest request) {
         Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-                return new UserInfoResponse(user.getUsername(), user.getEmail(), user.getCreatedAt());
+                return new UserInfoResponse(
+                        user.getId(),
+                        user.getUsername(),
+                        user.getEmail(),
+                        user.getCreatedAt()
+                );
             }
         }
         return null;

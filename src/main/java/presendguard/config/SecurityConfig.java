@@ -31,7 +31,8 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/help/**").permitAll() // 헬프(문의) API 허용
+                        .requestMatchers("/api/help/**").permitAll()
+                        .requestMatchers("/api/masking/**").permitAll() // ✅ 마스킹 로그 API 허용
                         .anyRequest().authenticated()
                 );
 

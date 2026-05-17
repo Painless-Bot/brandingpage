@@ -4,7 +4,7 @@ import LoginForm from './components/LoginForm';
 import HeroImage from "./assets/hero-image.png";
 import PolicyPage from './pages/PolicyPage';
 import HelpCenter from './pages/HelpCenter';
-import MaskingDashboard from './pages/MaskingDashboard';
+import PromptDashboard from './pages/PromptDashboard';
 
 function App() {
   const [counts, setCounts] = useState({ total: 0, risks: 0, score: 0 });
@@ -165,13 +165,10 @@ function App() {
           </div>
         )}
 
-        {/* ✅ 새로운 분석 대시보드 */}
         {currentView === 'analytics' && (
           <div className="fade-in">
-            <MaskingDashboard
-              loggedInUser={loggedInUser}
-              onRequireLogin={() => setIsModalOpen(true)}
-            />
+            <PromptDashboard />   {/* ✅ 이거여야 함 */}
+            {/* <MaskingDashboard /> ← 이게 있으면 안 됨 */}
           </div>
         )}
 

@@ -45,6 +45,53 @@ const laws = [
   },
 ];
 
+const scoreItems = [
+  { score: 80, name: '주민번호', color: '#cc0000', bg: '#f8d7da', textColor: '#842029' },
+  { score: 30, name: '전화번호', color: '#faad14', bg: '#fff3cd', textColor: '#856404' },
+  { score: 20, name: '이메일', color: '#52c41a', bg: '#d1e7dd', textColor: '#0f5132' },
+  { score: 15, name: '이름 (NER)', color: '#1890ff', bg: '#cff4fc', textColor: '#055160' },
+  { score: 10, name: '기관/지역 (NER)', color: '#888', bg: '#e2e3e5', textColor: '#383d41' },
+];
+
+const verdicts = [
+  {
+    code: 'ALLOW',
+    label: '안전',
+    range: '0점',
+    desc: '민감정보가 탐지되지 않아 안전하게 전송할 수 있습니다.',
+    color: '#0f5132',
+    bg: '#d1e7dd',
+    light: '#f0faf3',
+    icon: '✅',
+    rangeStart: 0,
+    rangeEnd: 0,
+  },
+  {
+    code: 'MASK',
+    label: '마스킹 권고',
+    range: '1 ~ 69점',
+    desc: '민감정보가 포함되어 있어 마스킹 후 전송이 권장됩니다.',
+    color: '#856404',
+    bg: '#fff3cd',
+    light: '#fffaf0',
+    icon: '🔒',
+    rangeStart: 1,
+    rangeEnd: 69,
+  },
+  {
+    code: 'WARN',
+    label: '위험 경고',
+    range: '70점 이상',
+    desc: '치명적 민감정보가 포함되어 전송을 중단하고 검토가 필요합니다.',
+    color: '#842029',
+    bg: '#f8d7da',
+    light: '#fdf5f6',
+    icon: '⚠️',
+    rangeStart: 70,
+    rangeEnd: 100,
+  },
+];
+
 export default function PolicyPage({ navigateTo }) {
   const [activeTab, setActiveTab] = useState('regex');
 
@@ -82,14 +129,14 @@ export default function PolicyPage({ navigateTo }) {
               className={`policy-tab ${activeTab === 'regex' ? 'active' : ''}`}
               onClick={() => setActiveTab('regex')}
             >
-               Regex 탐지
+              Regex 탐지
               <span className="tab-desc">형식 기반</span>
             </button>
             <button
               className={`policy-tab ${activeTab === 'ner' ? 'active' : ''}`}
               onClick={() => setActiveTab('ner')}
             >
-                NER 탐지
+              NER 탐지
               <span className="tab-desc">문맥 기반</span>
             </button>
           </div>
@@ -99,7 +146,6 @@ export default function PolicyPage({ navigateTo }) {
             <div className="detect-grid">
               {regexItems.map((item, i) => (
                 <div className="detect-card" key={i} style={{ animationDelay: `${i * 0.06}s` }}>
-                  <div className="detect-icon">{item.icon}</div>
                   <div className="detect-info">
                     <h3>{item.title}</h3>
                     <p>{item.desc}</p>
@@ -115,7 +161,6 @@ export default function PolicyPage({ navigateTo }) {
             <div className="detect-grid">
               {nerItems.map((item, i) => (
                 <div className="detect-card ner" key={i} style={{ animationDelay: `${i * 0.06}s` }}>
-                  <div className="detect-icon">{item.icon}</div>
                   <div className="detect-info">
                     <h3>{item.title}</h3>
                     <p>{item.desc}</p>
@@ -155,49 +200,132 @@ export default function PolicyPage({ navigateTo }) {
         </div>
       </section>
 
-      {/* 위험도 점수 안내 */}
+      {/* 위험도 점수 - 메인 섹션 ⭐ */}
       <section className="policy-section score-section">
         <div className="policy-container">
-          <div class="section-label">위험도 산정</div>
+          <div className="section-label">위험도 산정</div>
           <h2 className="section-title">위험 점수는 어떻게 계산되나요?</h2>
-          <div className="score-grid">
-            <div className="score-card">
-              <div className="score-badge" style={{ background: '#fff3cd', color: '#856404' }}>+30점</div>
-              <h3>전화번호</h3>
-              <p>1건 탐지 시</p>
-            </div>
-            <div className="score-card">
-              <div className="score-badge" style={{ background: '#d1e7dd', color: '#0f5132' }}>+20점</div>
-              <h3>이메일</h3>
-              <p>1건 탐지 시</p>
-            </div>
-            <div className="score-card">
-              <div className="score-badge" style={{ background: '#f8d7da', color: '#842029' }}>+80점</div>
-              <h3>주민번호</h3>
-              <p>1건 탐지 시</p>
-            </div>
-            <div className="score-card">
-              <div className="score-badge" style={{ background: '#cff4fc', color: '#055160' }}>+15점</div>
-              <h3>이름 (NER)</h3>
-              <p>1건 탐지 시</p>
-            </div>
-            <div className="score-card">
-              <div className="score-badge" style={{ background: '#e2e3e5', color: '#383d41' }}>+10점</div>
-              <h3>기관/지역 (NER)</h3>
-              <p>1건 탐지 시</p>
-            </div>
-            <div className="score-card verdict">
-              <div className="verdict-row">
-                <span className="verdict-badge allow">ALLOW</span>
-                <span>0점 — 전송 허용</span>
+          <p className="score-intro">
+            탐지된 항목별 점수를 합산하여 최종 위험도를 산정하고,
+            점수 구간에 따라 자동으로 판정이 이루어집니다.
+          </p>
+
+          {/* 메인 그리드: 좌(점수표) + 우(판정 메인) */}
+          <div className="score-main-grid">
+
+            {/* 왼쪽: 점수 항목 리스트 */}
+            <aside className="score-items-panel">
+              <div className="panel-header">
+                <h3>📋 항목별 점수</h3>
+                <span className="panel-sub">탐지 시 부여되는 점수</span>
               </div>
-              <div className="verdict-row">
-                <span className="verdict-badge mask">MASK</span>
-                <span>1~69점 — 마스킹 권고</span>
+
+              <div className="score-items-list">
+                {scoreItems.map((item, i) => (
+                  <div className="score-item" key={i} style={{ animationDelay: `${i * 0.08}s` }}>
+                    <div className="score-item-left">
+                      <span className="score-item-name">{item.name}</span>
+                      <span className="score-item-desc">1건 탐지 시</span>
+                    </div>
+                    <div
+                      className="score-item-value"
+                      style={{ background: item.bg, color: item.textColor }}
+                    >
+                      +{item.score}
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="verdict-row">
-                <span className="verdict-badge warn">WARN</span>
-                <span>70점 이상 — 위험 경고</span>
+
+              <div className="score-formula">
+                <div className="formula-label">계산 방식</div>
+                <div className="formula-text">
+                  탐지 점수 × 건수의 <strong>합계</strong>
+                </div>
+              </div>
+            </aside>
+
+            {/* 오른쪽: 판정 시스템 (메인) ⭐ */}
+            <div className="verdict-main-panel">
+              <div className="verdict-panel-header">
+                <h3>🎯 최종 판정 시스템</h3>
+                <span className="panel-sub">총점에 따른 자동 판정</span>
+              </div>
+
+              {/* 점수 스펙트럼 게이지 */}
+              <div className="verdict-spectrum">
+                <div className="spectrum-bar">
+                  <div className="spectrum-segment allow-seg" style={{ flex: '0 0 8%' }}>
+                    <span className="seg-label">0</span>
+                  </div>
+                  <div className="spectrum-segment mask-seg" style={{ flex: '0 0 62%' }}>
+                    <span className="seg-label">1 ~ 69</span>
+                  </div>
+                  <div className="spectrum-segment warn-seg" style={{ flex: '0 0 30%' }}>
+                    <span className="seg-label">70 ~ 100</span>
+                  </div>
+                </div>
+                <div className="spectrum-axis">
+                  <span>안전</span>
+                  <span>주의</span>
+                  <span>위험</span>
+                </div>
+              </div>
+
+              {/* 판정 카드 3종 (세로 배치, 큼) */}
+              <div className="verdict-cards-vertical">
+                {verdicts.map((v, i) => (
+                  <div
+                    className={`verdict-big-card verdict-${v.code.toLowerCase()}`}
+                    key={i}
+                    style={{
+                      borderLeftColor: v.color,
+                      animationDelay: `${0.3 + i * 0.12}s`
+                    }}
+                  >
+                    <div className="verdict-icon-wrap" style={{ background: v.bg }}>
+                      <span className="verdict-emoji">{v.icon}</span>
+                    </div>
+
+                    <div className="verdict-content">
+                      <div className="verdict-header-row">
+                        <span
+                          className="verdict-code-badge"
+                          style={{ background: v.bg, color: v.color }}
+                        >
+                          {v.code}
+                        </span>
+                        <span className="verdict-range" style={{ color: v.color }}>
+                          {v.range}
+                        </span>
+                      </div>
+                      <h4 className="verdict-label" style={{ color: v.color }}>{v.label}</h4>
+                      <p className="verdict-desc">{v.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* 예시 시나리오 */}
+              <div className="verdict-example">
+                <div className="example-label">💡 예시</div>
+                <div className="example-text">
+                  <span className="example-input">"제 전화번호는 010-1234-5678이고 이메일은 abc@gmail.com 이에요"</span>
+                  <div className="example-arrow">↓</div>
+                  <div className="example-calc">
+                    <span className="calc-item">전화번호 +30</span>
+                    <span className="calc-op">+</span>
+                    <span className="calc-item">이메일 +20</span>
+                    <span className="calc-op">=</span>
+                    <span className="calc-result">50점</span>
+                  </div>
+                  <div className="example-verdict">
+                    <span className="verdict-code-badge" style={{ background: '#fff3cd', color: '#856404' }}>
+                      🔒 MASK
+                    </span>
+                    <span>마스킹 권고</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

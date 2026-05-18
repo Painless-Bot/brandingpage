@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
  *   verdict     enum('ALLOW','BLOCK','MASK','REVIEW','WARN')  NOT NULL
  *   created_at  datetime(6)      NOT NULL
  *   updated_at  datetime(6)      NOT NULL
+ *   user_id     varchar(255)     NULL          ⭐ 추가
  */
 @Entity
 @Getter
@@ -56,4 +57,13 @@ public class Prompt {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    /**
+     * ⭐ 사용자 식별자 (이메일 또는 "anonymousUser")
+     * - 로그인 사용자: 본인 이메일
+     * - 비로그인 사용자: "anonymousUser"
+     * - 마스킹 엔진이 INSERT 시 함께 저장
+     */
+    @Column(name = "user_id", length = 255)
+    private String userId;
 }

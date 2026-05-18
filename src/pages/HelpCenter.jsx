@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
+import { apiFetch } from '../components/util/api';
 import './HelpCenter.css';
-
-const API_BASE = 'http://localhost:8080';
 
 const STATUS_LABEL = {
   PENDING: { text: '접수', className: 'status-pending' },
@@ -10,14 +9,13 @@ const STATUS_LABEL = {
 };
 
 export default function HelpCenter({ loggedInUser, onRequireLogin }) {
-  const [activeTab, setActiveTab] = useState('faq'); // 'faq' | 'guide' | 'inquiry'
+  const [activeTab, setActiveTab] = useState('faq');
   const [inquiries, setInquiries] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [selectedInquiry, setSelectedInquiry] = useState(null);
 
-  // 문의 작성 폼
   const [form, setForm] = useState({ title: '', content: '' });
   const [submitting, setSubmitting] = useState(false);
 
@@ -27,7 +25,7 @@ export default function HelpCenter({ loggedInUser, onRequireLogin }) {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`${API_BASE}/api/help/inquiries/user/${loggedInUser.id}`);
+      const res = await apiFetch(`/api/help/inquiries/user/${loggedInUser.id}`);
       if (!res.ok) throw new Error('문의 내역을 불러오지 못했습니다.');
       const data = await res.json();
       setInquiries(data);
@@ -60,9 +58,8 @@ export default function HelpCenter({ loggedInUser, onRequireLogin }) {
     setError('');
     setSuccessMsg('');
     try {
-      const res = await fetch(`${API_BASE}/api/help/inquiry`, {
+      const res = await apiFetch('/api/help/inquiry', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: loggedInUser.id,
           title: form.title,
@@ -86,7 +83,7 @@ export default function HelpCenter({ loggedInUser, onRequireLogin }) {
     e.stopPropagation();
     if (!window.confirm('이 문의를 정말 삭제하시겠습니까?')) return;
     try {
-      const res = await fetch(`${API_BASE}/api/help/inquiry/${id}`, { method: 'DELETE' });
+      const res = await apiFetch(`/api/help/inquiry/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('삭제에 실패했습니다.');
       setInquiries(inquiries.filter((q) => q.id !== id));
       if (selectedInquiry?.id === id) setSelectedInquiry(null);

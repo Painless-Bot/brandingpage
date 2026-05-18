@@ -41,15 +41,21 @@ const LoginForm = ({ onLogin }) => {
 
       if (response.ok) {
         if (isLoginMode) {
-          const userInfo = await response.json();
-          setSuccessMessage('로그인 성공! 🎉');
+          // ⭐ 로그인 성공: JWT 토큰 + 사용자 정보 받기
+          const loginResponse = await response.json();
+
+          // localStorage에 토큰 저장
+          localStorage.setItem('authToken', loginResponse.token);
+          localStorage.setItem('userInfo', JSON.stringify(loginResponse.user));
+
+          setSuccessMessage('로그인 성공!');
           setIsSuccess(true);
           setTimeout(() => {
             setIsSuccess(false);
-            onLogin(userInfo);
+            onLogin(loginResponse.user);
           }, 1500);
         } else {
-          setSuccessMessage('회원가입 성공! 🎉');
+          setSuccessMessage('회원가입 성공!');
           setIsSuccess(true);
           setTimeout(() => {
             setIsSuccess(false);
@@ -74,7 +80,6 @@ const LoginForm = ({ onLogin }) => {
   if (isSuccess) {
     return (
       <div className="login-box" style={{ textAlign: 'center', padding: '60px 40px' }}>
-        <div style={{ fontSize: '64px', marginBottom: '20px' }}>✅</div>
         <h2 style={{ color: 'var(--navy)', marginBottom: '12px' }}>{successMessage}</h2>
         <p style={{ color: 'var(--text-gray)', fontSize: '15px' }}>잠시 후 이동합니다...</p>
       </div>

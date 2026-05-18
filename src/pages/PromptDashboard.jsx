@@ -3,9 +3,8 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, BarChart, Bar
 } from 'recharts';
+import { apiFetch } from '../components/util/api';
 import './PromptDashboard.css';
-
-const API_BASE = 'http://localhost:8080';
 
 // 5종 verdict 메타정보 (DB enum과 동일)
 const VERDICT_META = {
@@ -56,7 +55,8 @@ export default function PromptDashboard() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`${API_BASE}/api/prompt/dashboard?days=${period}`);
+      // ⭐ apiFetch 사용 (토큰 자동 첨부)
+      const res = await apiFetch(`/api/prompt/dashboard?days=${period}`);
       if (!res.ok) throw new Error('대시보드 데이터를 불러오지 못했습니다.');
       setDashboard(await res.json());
     } catch (e) {
@@ -68,7 +68,8 @@ export default function PromptDashboard() {
 
   const fetchLogs = async (pageNum = 0) => {
     try {
-      const res = await fetch(`${API_BASE}/api/prompt/logs?page=${pageNum}&size=10`);
+      // ⭐ apiFetch 사용
+      const res = await apiFetch(`/api/prompt/logs?page=${pageNum}&size=10`);
       if (!res.ok) throw new Error('로그를 불러오지 못했습니다.');
       const data = await res.json();
       setLogs(data.content || []);
@@ -81,7 +82,8 @@ export default function PromptDashboard() {
 
   const fetchLogDetail = async (id) => {
     try {
-      const res = await fetch(`${API_BASE}/api/prompt/log/${id}`);
+      // ⭐ apiFetch 사용
+      const res = await apiFetch(`/api/prompt/log/${id}`);
       if (!res.ok) throw new Error('상세 정보를 불러오지 못했습니다.');
       setSelectedLog(await res.json());
     } catch (e) {

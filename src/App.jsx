@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 import LoginForm from './components/LoginForm';
+import { getCurrentUser, logout, apiFetch } from './components/util/api';
 import HeroImage from "./assets/hero-image.png";
 import PolicyPage from './pages/PolicyPage';
 import HelpCenter from './pages/HelpCenter';
@@ -8,11 +9,55 @@ import PromptDashboard from './pages/PromptDashboard';
 
 function App() {
   const [counts, setCounts] = useState({ total: 0, risks: 0, score: 0 });
+  const [realData, setRealData] = useState({ total: 0, risks: 0, score: 100 });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [currentView, setCurrentView] = useState('main');
-  const [loggedInUser, setLoggedInUser] = useState(null);
 
+  // ⭐ 새로고침 시 localStorage에서 사용자 정보 복원
+  const [loggedInUser, setLoggedInUser] = useState(() => {
+    return getCurrentUser();
+  });
+
+  // ⭐ 로그아웃 핸들러
+  const handleLogout = () => {
+    logout();
+    setLoggedInUser(null);
+    navigateTo('main');
+  };
+
+  // ⭐ 메인 화면용 실제 데이터 가져오기
+  useEffect(() => {
+    if (currentView !== 'main') return;
+    if (!loggedInUser) {
+      // 로그아웃 상태면 0으로 표시
+      setRealData({ total: 0, risks: 0, score: 100 });
+      return;
+    }
+
+    const fetchRealStats = async () => {
+      try {
+        const res = await apiFetch('/api/prompt/dashboard?days=30');
+        if (!res.ok) return;
+        const data = await res.json();
+
+        // 차단된 위험 = WARN + BLOCK (실제 위험 판정된 항목)
+        const risks = (data.warnCount || 0) + (data.blockCount || 0);
+
+        setRealData({
+          total: data.totalChecked || 0,
+          risks: risks,
+          score: data.securityScore || 100
+        });
+      } catch (err) {
+        console.error('대시보드 데이터 로드 실패:', err);
+      }
+    };
+
+    fetchRealStats();
+  }, [currentView, loggedInUser]);
+
+  // ⭐ 카운트업 애니메이션 (실제 데이터 기반)
   useEffect(() => {
     if (currentView !== 'main') return;
 
@@ -26,15 +71,15 @@ function App() {
       const progress = frame / totalFrames;
       const easeOut = 1 - Math.pow(1 - progress, 3);
       setCounts({
-        total: Math.floor(easeOut * 1284),
-        risks: Math.floor(easeOut * 12),
-        score: Math.floor(easeOut * 98)
+        total: Math.floor(easeOut * realData.total),
+        risks: Math.floor(easeOut * realData.risks),
+        score: Math.floor(easeOut * realData.score)
       });
       if (frame === totalFrames) clearInterval(timer);
     }, frameRate);
 
     return () => clearInterval(timer);
-  }, [currentView]);
+  }, [currentView, realData]);
 
   const navigateTo = (view) => {
     setCurrentView(view);
@@ -96,7 +141,7 @@ function App() {
                 👤 {loggedInUser.username}
               </li>
               <li
-                onClick={() => { setLoggedInUser(null); navigateTo('main'); }}
+                onClick={handleLogout}
                 style={{ color: '#ff4d4d', fontWeight: '700', cursor: 'pointer' }}
               >
                 로그아웃
@@ -143,12 +188,25 @@ function App() {
             <section className="dashboard-section" id="dashboard">
               <div className="section-header">
                 <h2>Security Dashboard</h2>
-                <p>실시간 보안 모니터링 현황</p>
+                <p>
+                  {loggedInUser
+                    ? `${loggedInUser.username}님의 실시간 보안 모니터링 현황`
+                    : '로그인하면 본인의 보안 통계를 확인할 수 있습니다'}
+                </p>
               </div>
               <div className="stats-grid">
-                <div className="stat-card"><h3>전체 프롬프트</h3><p className="stat-number">{counts.total.toLocaleString()}</p></div>
-                <div className="stat-card danger"><h3>차단된 위험</h3><p className="stat-number">{counts.risks}</p></div>
-                <div className="stat-card highlight"><h3>보안 점수</h3><p className="stat-number">{counts.score}%</p></div>
+                <div className="stat-card">
+                  <h3>전체 프롬프트</h3>
+                  <p className="stat-number">{counts.total.toLocaleString()}</p>
+                </div>
+                <div className="stat-card danger">
+                  <h3>차단된 위험</h3>
+                  <p className="stat-number">{counts.risks}</p>
+                </div>
+                <div className="stat-card highlight">
+                  <h3>보안 점수</h3>
+                  <p className="stat-number">{counts.score}%</p>
+                </div>
               </div>
               <div style={{ marginTop: 40, textAlign: 'center' }}>
                 <button
@@ -158,7 +216,7 @@ function App() {
                     else setIsModalOpen(true);
                   }}
                 >
-                  상세 분석 보기 →
+                  {loggedInUser ? '상세 분석 보기 →' : '로그인하고 시작하기 →'}
                 </button>
               </div>
             </section>
@@ -167,8 +225,7 @@ function App() {
 
         {currentView === 'analytics' && (
           <div className="fade-in">
-            <PromptDashboard />   {/* ✅ 이거여야 함 */}
-            {/* <MaskingDashboard /> ← 이게 있으면 안 됨 */}
+            <PromptDashboard />
           </div>
         )}
 
@@ -190,7 +247,7 @@ function App() {
                   <button
                     className="btn-login-submit"
                     style={{ marginTop: '10px', background: '#ff4d4d' }}
-                    onClick={() => { setLoggedInUser(null); navigateTo('main'); }}
+                    onClick={handleLogout}
                   >
                     로그아웃
                   </button>

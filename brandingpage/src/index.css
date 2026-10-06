@@ -1,0 +1,18 @@
+:root {
+  /* 피그마 그라데이션 컬러 적용 */
+  --bg-top: #cfe8fc; 
+  --bg-bottom: #fff7eb;
+  --primary-blue: #3b71e8;
+  --text-dark: #1a1a1a;
+  --text-gray: #555555;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, sans-serif;
+  color: var(--text-dark);
+}

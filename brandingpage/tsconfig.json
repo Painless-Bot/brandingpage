@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "bundler", 
+    "ignoreDeprecations": "5.0",
+    "target": "ESNext",
+    "jsx": "react-jsx",
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "noEmit": true
+  },
+  "include": ["src"]
+}
